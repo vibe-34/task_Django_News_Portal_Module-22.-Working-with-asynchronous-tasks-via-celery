@@ -13,3 +13,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # указываем Celery автоматически искать задания в файлах tasks.py каждого приложения проекта
 app.autodiscover_tasks()
+
+# для автоматической попытке установить соединение с брокером, если оно не удается при первом запуске.
+app.conf.broker_connection_retry_on_startup = True
+

@@ -4,6 +4,7 @@ from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
 from .models import PostCategory
+from .tasks import *
 from django.conf import settings
 
 
@@ -23,23 +24,13 @@ def post_created(sender, instance, action, **kwargs):
             category_emails = User.objects.filter(subscriptions__category=category).values_list('email', flat=True)
             emails.update(category_emails)                        # Добавляем email-адреса в set
 
-        # Создание содержимого письма
-        if emails:
-            subject = f'Новая запись в категории: {", ".join([cat.name for cat in categories])}'
-            text_content = (
-                f'Название: {instance.title}\n'
-                f'Анонс: {instance.content[:50]}...\n\n'
-                f'Ссылка на публикацию: {settings.SITE_URL}{instance.get_absolute_url()}'
-            )
-            html_content = (
-                f'Название: {instance.title}<br>'
-                f'Анонс: {instance.content[:50]}...<br><br>'
-                f'<a href="{settings.SITE_URL}{instance.get_absolute_url()}">'
-                f'Ссылка на публикацию</a>'
-            )
+            # Создание содержимого письма
+            if emails:
 
-            # Отправка писем
-            for email in emails:
-                msg = EmailMultiAlternatives(subject, text_content, None, [email])
-                msg.attach_alternative(html_content, "text/html")
-                msg.send()
+                # вызываем нашу таску и передаем ей необходимые аргументы
+                with_every_new_post.delay(instance.categories.all(),
+                                          instance.preview(),
+                                          instance.title,
+                                          emails,
+                                          instance.get_absolute_url(),
+                                          )
