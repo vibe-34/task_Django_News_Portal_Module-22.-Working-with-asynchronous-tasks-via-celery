@@ -1,0 +1,14 @@
+<!--  наследуемся от шаблона default.html, который мы создавали для flatpages -->
+{% extends 'flatpages/default.html' %}
+
+{% block content %}
+<div class="features">
+
+    <form method="post">           <!--атрибут action, не прописываем, что бы проверка формы была на этой же странице-->
+    {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Sing up">
+    </form>
+</div>
+{% endblock %}
+

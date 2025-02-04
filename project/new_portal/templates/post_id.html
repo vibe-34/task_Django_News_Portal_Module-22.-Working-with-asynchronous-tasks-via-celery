@@ -1,0 +1,39 @@
+<!--  наследуемся от шаблона default.html, который мы создавали для flatpages -->
+{% extends 'flatpages/default.html' %}
+
+<!--  Подключаем собственный фильтр из new_portal/templatetags/censor_filters -->
+{% load censor_filters %}
+
+<!-- Название у нас будет New_id -->
+{% block title %}
+    {{ post_id.title }}
+{% endblock title %}
+
+<!-- В контенте на странице мы выводим сам товар, идентификатор которого был передан в url -->
+{% block content %}
+<h1>{{ post_id.title }}</h1>
+
+{% if post_id %}
+        <table>
+            <tr>
+                <td>Заголовок</td>
+                <td>Дата публикации</td>
+                <td>Содержание</td>
+            </tr>
+            <tr>
+                <td>{{ post_id.title|censor }}</td>
+                <td>{{ post_id.time_in|date:'d m Y' }}</td>
+                <td>{{ post_id.content|censor}}</td>
+            </tr>
+        </table>
+<!--Проверяем право доступа для каждой ссылки отдельно-->
+{% if perms.new_portal.change_post %}
+    <a href="{% url 'post_update' post_id.id %}">Редактировать</a>
+{% endif %}
+
+{% if perms.new_portal.delete_post %}
+    <a href="{% url 'post_delete' post_id.id %}">Удалить</a>
+{% endif %}
+
+{% endif %}
+{% endblock content %}

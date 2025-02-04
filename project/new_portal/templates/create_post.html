@@ -1,0 +1,14 @@
+<!--  наследуемся от шаблона default.html, который мы создавали для flatpages -->
+{% extends 'flatpages/default.html' %}
+
+{% block title %}Форма по добавлению публикации{% endblock %}
+
+{% block content %}
+<h1>Форма по добавлению публикации</h1>
+<hr>
+    <form action="" method="post">
+        {% csrf_token %}
+        {{ form.as_p }}  <!-- Отображаем нашу форму -->
+        <input type="submit" value="Сохранить" />
+    </form>
+{% endblock content %}
