@@ -3,7 +3,10 @@ from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
 
 from celery import shared_task
-from new_portal.models import Post
+from django.template.loader import render_to_string
+
+from new_portal.models import Post, Category, Subscription
+from datetime import datetime, timedelta
 
 
 @shared_task
@@ -38,3 +41,32 @@ def with_every_new_post(pk):
         msg = EmailMultiAlternatives(subject, text_content, None, [email])
         msg.attach_alternative(html_content, "text/html")
         msg.send()
+
+
+@shared_task
+def weekly_newsletter():
+    week_ago = datetime.now() - timedelta(days=7)
+
+    for cat in Category.objects.all():
+        posts_list = list(cat.post_set.filter(time_in__gte=week_ago))
+
+        if not posts_list:
+            continue
+
+        subscribers = Subscription.objects.filter(category=cat).values_list('user__email', flat=True)
+        for email in subscribers:
+            html_content = render_to_string(
+                'email/daily_post.html',
+                {
+                    'link': settings.SITE_URL,
+                    'posts_list': posts_list,
+                }
+            )
+
+            msg = EmailMultiAlternatives(
+                subject='Статьи за неделю в категории {}'.format(cat.name),
+                body='',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[email], )
+            msg.attach_alternative(html_content, 'text/html')
+            msg.send()
