@@ -19,16 +19,9 @@ app.autodiscover_tasks()
 app.conf.broker_connection_retry_on_startup = True
 
 # отправлять уведомления каждый понедельник в 8 утра, о новых публикациях (подписчикам категорий)
-# app.conf.beat_schedule = {
-#     'send_notification_every_monday_8am': {
-#         'task': 'new_portal.tasks.weekly_newsletter',
-#         'schedule': crontab(hour=8, minute=0, day_of_week='monday'),
-#     },
-# }
-
 app.conf.beat_schedule = {
-    'send-weekly-newsletter-every-minute': {
+    'send_notification_every_monday_8am': {
         'task': 'new_portal.tasks.weekly_newsletter',
-        'schedule': crontab(),  # Каждую минуту
+        'schedule': crontab(hour=8, minute=0, day_of_week='monday'),
     },
 }
